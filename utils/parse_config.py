@@ -20,6 +20,7 @@ def parse_model_config(path):
 
     return module_defs
 
+
 def parse_data_config(path):
     """Parses the data configuration file"""
     options = dict()

@@ -1,0 +1,1 @@
+python detect.py --image_folder '/media/terbe/sztaki/DATA/BabyCropper/data/illustration_selection/' --model_def 'config/yolov3-custom.cfg' --class_path 'data/custom/classes.names' --weights_path 'weights/yolov3_ckpt_99.pth'
