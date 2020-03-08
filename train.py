@@ -45,7 +45,7 @@ if __name__ == "__main__":
     experiment = Experiment(api_key="hs2nruoKow2CnUKisoeHccvh7", project_name="yolo", workspace="terbed")
     experiment.disable_mp()
 
-    device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     os.makedirs("output", exist_ok=True)
     os.makedirs("checkpoints", exist_ok=True)
