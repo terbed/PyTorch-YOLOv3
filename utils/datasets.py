@@ -30,12 +30,6 @@ def resize(image, size, mode='nearest'):
     return image
 
 
-def random_resize(images, min_size=288, max_size=448):
-    new_size = random.sample(list(range(min_size, max_size + 1, 32)), 1)[0]
-    images = F.interpolate(images, size=new_size, mode="nearest")
-    return images
-
-
 class ImageFolder(Dataset):
     def __init__(self, folder_path, img_size=416, resize_mode='nearest'):
         self.files = sorted(glob.glob("%s/*.*" % folder_path))
