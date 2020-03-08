@@ -43,6 +43,7 @@ if __name__ == "__main__":
 
     logger = Logger("logs")
     experiment = Experiment(api_key="hs2nruoKow2CnUKisoeHccvh7", project_name="yolo", workspace="terbed")
+    experiment.disable_mp()
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -186,6 +187,8 @@ if __name__ == "__main__":
                 ap_table += [[c, class_names[c], "%.5f" % AP[i]]]
             print(AsciiTable(ap_table).table)
             print(f"---- mAP {AP.mean()}")
+            with experiment.test():
+                experiment.log_metric("AP", AP.mean())
 
         if epoch % opt.checkpoint_interval == 0:
             torch.save(model.state_dict(), f"checkpoints/yolov3_ckpt_%d.pth" % epoch)
