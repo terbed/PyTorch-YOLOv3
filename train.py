@@ -184,13 +184,14 @@ if __name__ == "__main__":
                 experiment.log_metric("precision", precision.mean(), epoch=epoch)
 
             # Print class APs and mAP
-            ap_table = [["Index", "Class name", "AP"]]
-            for i, c in enumerate(ap_class):
-                ap_table += [[c, class_names[c], "%.5f" % AP[i]]]
-            print(AsciiTable(ap_table).table)
-            print(f"---- mAP {AP.mean()}")
-            with experiment.test():
-                experiment.log_metric("AP_baby", AP[0], epoch=epoch)
+            if AP != -1:
+                ap_table = [["Index", "Class name", "AP"]]
+                for i, c in enumerate(ap_class):
+                    ap_table += [[c, class_names[c], "%.5f" % AP[i]]]
+                print(AsciiTable(ap_table).table)
+                print(f"---- mAP {AP.mean()}")
+                with experiment.test():
+                    experiment.log_metric("AP_baby", AP[0], epoch=epoch)
 
         if epoch % opt.checkpoint_interval == 0:
             torch.save(model.state_dict(), f"checkpoints/yolov3_ckpt_%d.pth" % epoch)
