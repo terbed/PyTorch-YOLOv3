@@ -98,7 +98,7 @@ class ListDataset(Dataset):
             img = img.unsqueeze(0)
             img = img.expand((3, img.shape[1:]))
 
-        h, w = (self.img_size, self.img_size)
+        _, h, w = img.shape
         h_factor, w_factor = (h, w) if self.normalized_labels else (1, 1)
         # Pad to square resolution
         img, pad = pad_to_square(img, 0)
