@@ -8,6 +8,7 @@ import torch
 import torch.nn.functional as F
 
 from utils.augmentations import horizontal_flip
+from utils.utils import rescale_boxes
 from torch.utils.data import Dataset
 import torchvision.transforms as transforms
 
@@ -152,7 +153,7 @@ class ListDataset(Dataset):
     def collate_fn(self, batch):
         paths, imgs, targets = list(zip(*batch))
         # Remove empty placeholder targets
-        targets = [boxes for boxes in targets if boxes is not None]
+        targets = [rescale_boxes(boxes, 500, (self.img_files, self.img_size)) for boxes in targets if boxes is not None]
         # Add sample index to targets
         for i, boxes in enumerate(targets):
             boxes[:, 0] = i
@@ -163,6 +164,7 @@ class ListDataset(Dataset):
 
         # Resize images
         imgs = torch.stack([resize(img, self.img_size, self.resize_mode) for img in imgs])
+        targets
 
         self.batch_count += 1
 
