@@ -45,6 +45,8 @@ class ImageFolder(Dataset):
         # Resize
         img = resize(img, self.img_size, self.resize_mode)
 
+        # TODO: channel centralization
+
         return img_path, img
 
     def __len__(self):
@@ -86,6 +88,8 @@ class ListDataset(Dataset):
             img = img.unsqueeze(0)
             img = img.expand((3, img.shape[1:]))
 
+        # TODO: channel centralization
+
         _, h, w = img.shape
         h_factor, w_factor = (h, w) if self.normalized_labels else (1, 1)
         # Pad to square resolution
@@ -124,6 +128,8 @@ class ListDataset(Dataset):
         if self.augment:
             if np.random.random() < 0.5:
                 img, targets = horizontal_flip(img, targets)
+
+            # TODO: Add more augmentations
 
         return img_path, img, targets
 
