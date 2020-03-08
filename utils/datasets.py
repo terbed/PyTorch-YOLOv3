@@ -81,6 +81,7 @@ class ListDataset(Dataset):
         img_path = self.img_files[index % len(self.img_files)].rstrip()
         # Open image
         img = Image.open(img_path).convert('RGB')
+        resize(img, self.img_size, self.resize_mode)
         # Apply PIL augmentations
         if self.augment:
             if np.random.random() < 0.8:
@@ -97,9 +98,6 @@ class ListDataset(Dataset):
         if len(img.shape) != 3:
             img = img.unsqueeze(0)
             img = img.expand((3, img.shape[1:]))
-
-        # channel centralization
-        # img = torch.sub(img, torch.mean(img, (1, 2)).view(3, 1, 1))
 
         _, h, w = img.shape
         h_factor, w_factor = (h, w) if self.normalized_labels else (1, 1)
@@ -154,8 +152,9 @@ class ListDataset(Dataset):
         if self.multiscale and self.batch_count % 10 == 0:
             self.img_size = random.choice(range(self.min_size, self.max_size + 1, 32))
         # Resize images to input shape
-        imgs = torch.stack([resize(img, self.img_size, self.resize_mode) for img in imgs])
+        # imgs = torch.stack([resize(img, self.img_size, self.resize_mode) for img in imgs])
         self.batch_count += 1
+
         return paths, imgs, targets
 
     def __len__(self):
