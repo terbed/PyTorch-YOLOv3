@@ -79,9 +79,19 @@ class ListDataset(Dataset):
         # ---------
 
         img_path = self.img_files[index % len(self.img_files)].rstrip()
-
+        # Open image
+        img = Image.open(img_path).convert('RGB')
+        # Apply PIL augmentations
+        if self.augment:
+            if np.random.random() < 0.8:
+                img = transforms.ColorJitter(
+                    brightness=(0.3, 1.5),
+                    contrast=(0.7, 1.3),
+                    saturation=(0.7, 1.3),
+                    hue=(-0.1, 0.1)
+                )(img)
         # Extract image as PyTorch tensor
-        img = transforms.ToTensor()(Image.open(img_path).convert('RGB'))
+        img = transforms.ToTensor()(img)
 
         # Handle images with less than three channels
         if len(img.shape) != 3:
@@ -125,18 +135,10 @@ class ListDataset(Dataset):
             targets = torch.zeros((len(boxes), 6))
             targets[:, 1:] = boxes
 
-        # Apply augmentations
+        # Apply augmentations on image tensor (and also on label correspondingly)
         if self.augment:
             if np.random.random() < 0.5:
                 img, targets = horizontal_flip(img, targets)
-
-            if np.random.random() < 0.8:
-                img = transforms.ColorJitter(
-                    brightness=(0.3, 1.5),
-                    contrast=(0.7, 1.3),
-                    saturation=(0.7, 1.3),
-                    hue=(-0.1, 0.1)
-                )(img)
 
         return img_path, img, targets
 

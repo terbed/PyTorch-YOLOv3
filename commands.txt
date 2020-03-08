@@ -1,1 +1,3 @@
 python detect.py --image_folder '/media/terbe/sztaki/DATA/BabyCropper/data/illustration_selection/' --model_def 'config/yolov3-custom.cfg' --class_path 'data/custom/classes.names' --weights_path 'weights/yolov3_ckpt_99.pth'
+
+python train.py --model_def config/yolov3-custom.cfg --data_config config/custom.data --img_size 128 --interp_mode area
