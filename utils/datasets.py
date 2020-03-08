@@ -45,7 +45,7 @@ class ImageFolder(Dataset):
         # Resize
         img = resize(img, self.img_size, self.resize_mode)
         # channel centralization
-        img = torch.sub(img, torch.mean(img, (1, 2)).view(3, 1, 1))
+        # img = torch.sub(img, torch.mean(img, (1, 2)).view(3, 1, 1))
 
         return img_path, img
 
@@ -99,7 +99,7 @@ class ListDataset(Dataset):
             img = img.expand((3, img.shape[1:]))
 
         # channel centralization
-        img = torch.sub(img, torch.mean(img, (1, 2)).view(3, 1, 1))
+        # img = torch.sub(img, torch.mean(img, (1, 2)).view(3, 1, 1))
 
         _, h, w = img.shape
         h_factor, w_factor = (h, w) if self.normalized_labels else (1, 1)
