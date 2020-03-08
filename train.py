@@ -147,7 +147,7 @@ if __name__ == "__main__":
             log_str += AsciiTable(metric_table).table
             log_str += f"\nTotal loss {loss.item()}"
             with experiment.train():
-                experiment.log_metric("total_loss", loss.item())
+                experiment.log_metric("total_loss", loss.item(), epoch=epoch)
 
             # Determine approximate time left for epoch
             epoch_batches_left = len(dataloader) - (batch_i + 1)
@@ -179,7 +179,7 @@ if __name__ == "__main__":
             ]
             logger.list_of_scalars_summary(evaluation_metrics, epoch)
             with experiment.test():
-                experiment.log_metric("precision", precision.mean())
+                experiment.log_metric("precision", precision.mean(), epoch=epoch)
 
             # Print class APs and mAP
             ap_table = [["Index", "Class name", "AP"]]
@@ -188,7 +188,7 @@ if __name__ == "__main__":
             print(AsciiTable(ap_table).table)
             print(f"---- mAP {AP.mean()}")
             with experiment.test():
-                experiment.log_metric("AP", AP.mean())
+                experiment.log_metric("AP", AP.mean(), epoch=epoch)
 
         if epoch % opt.checkpoint_interval == 0:
             torch.save(model.state_dict(), f"checkpoints/yolov3_ckpt_%d.pth" % epoch)
