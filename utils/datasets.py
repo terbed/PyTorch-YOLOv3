@@ -92,15 +92,13 @@ class ListDataset(Dataset):
                 )(img)
         # Extract image as PyTorch tensor
         img = transforms.ToTensor()(img)
-        # Resize image
-        img = resize(img, self.img_size, self.resize_mode)
 
         # Handle images with less than three channels
         if len(img.shape) != 3:
             img = img.unsqueeze(0)
             img = img.expand((3, img.shape[1:]))
 
-        _, h, w = img.shape
+        h, w = (self.img_size, self.img_size)
         h_factor, w_factor = (h, w) if self.normalized_labels else (1, 1)
         # Pad to square resolution
         img, pad = pad_to_square(img, 0)
@@ -152,8 +150,10 @@ class ListDataset(Dataset):
         # Selects new image size every tenth batch
         if self.multiscale and self.batch_count % 10 == 0:
             self.img_size = random.choice(range(self.min_size, self.max_size + 1, 32))
-        # Resize images to input shape
-        # imgs = torch.stack([resize(img, self.img_size, self.resize_mode) for img in imgs])
+
+        # Resize images
+        imgs = torch.stack([resize(img, self.img_size, self.resize_mode) for img in imgs])
+
         self.batch_count += 1
 
         return paths, imgs, targets
