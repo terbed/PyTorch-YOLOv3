@@ -96,7 +96,7 @@ if __name__ == "__main__":
         conf_thres=opt.conf_thres,
         nms_thres=opt.nms_thres,
         img_size=opt.img_size,
-        interp_mode=opt.resize_mode,
+        interp_mode=opt.interp_mode,
         batch_size=8,
     )
 
