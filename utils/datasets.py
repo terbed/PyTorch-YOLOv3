@@ -93,7 +93,7 @@ class ListDataset(Dataset):
         # Extract image as PyTorch tensor
         img = transforms.ToTensor()(img)
         # Resize image
-        resize(img, self.img_size, self.resize_mode)
+        img = resize(img, self.img_size, self.resize_mode)
 
         # Handle images with less than three channels
         if len(img.shape) != 3:
