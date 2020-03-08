@@ -7,7 +7,7 @@ from PIL import Image
 import torch
 import torch.nn.functional as F
 
-from utils.augmentations import horisontal_flip
+from utils.augmentations import horizontal_flip
 from torch.utils.data import Dataset
 import torchvision.transforms as transforms
 
@@ -25,8 +25,8 @@ def pad_to_square(img, pad_value):
     return img, pad
 
 
-def resize(image, size):
-    image = F.interpolate(image.unsqueeze(0), size=size, mode="nearest").squeeze(0)
+def resize(image, size, mode='nearest'):
+    image = F.interpolate(image.unsqueeze(0), size=size, mode=mode).squeeze(0)
     return image
 
 
@@ -37,9 +37,10 @@ def random_resize(images, min_size=288, max_size=448):
 
 
 class ImageFolder(Dataset):
-    def __init__(self, folder_path, img_size=416):
+    def __init__(self, folder_path, img_size=416, resize_mode='nearest'):
         self.files = sorted(glob.glob("%s/*.*" % folder_path))
         self.img_size = img_size
+        self.resize_mode = resize_mode
 
     def __getitem__(self, index):
         img_path = self.files[index % len(self.files)]
@@ -48,7 +49,7 @@ class ImageFolder(Dataset):
         # Pad to square resolution
         img, _ = pad_to_square(img, 0)
         # Resize
-        img = resize(img, self.img_size)
+        img = resize(img, self.img_size, self.resize_mode)
 
         return img_path, img
 
@@ -57,7 +58,7 @@ class ImageFolder(Dataset):
 
 
 class ListDataset(Dataset):
-    def __init__(self, list_path, img_size=416, augment=True, multiscale=True, normalized_labels=True):
+    def __init__(self, list_path, img_size=416, resize_mode='nearest', augment=True, multiscale=True, normalized_labels=True):
         with open(list_path, "r") as file:
             self.img_files = file.readlines()
 
@@ -66,6 +67,7 @@ class ListDataset(Dataset):
             for path in self.img_files
         ]
         self.img_size = img_size
+        self.resize_mode = resize_mode
         self.max_objects = 100
         self.augment = augment
         self.multiscale = multiscale
@@ -127,7 +129,7 @@ class ListDataset(Dataset):
         # Apply augmentations
         if self.augment:
             if np.random.random() < 0.5:
-                img, targets = horisontal_flip(img, targets)
+                img, targets = horizontal_flip(img, targets)
 
         return img_path, img, targets
 
@@ -143,7 +145,7 @@ class ListDataset(Dataset):
         if self.multiscale and self.batch_count % 10 == 0:
             self.img_size = random.choice(range(self.min_size, self.max_size + 1, 32))
         # Resize images to input shape
-        imgs = torch.stack([resize(img, self.img_size) for img in imgs])
+        imgs = torch.stack([resize(img, self.img_size, self.resize_mode) for img in imgs])
         self.batch_count += 1
         return paths, imgs, targets
 
