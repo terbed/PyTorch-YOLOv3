@@ -44,8 +44,8 @@ class ImageFolder(Dataset):
         img, _ = pad_to_square(img, 0)
         # Resize
         img = resize(img, self.img_size, self.resize_mode)
-
-        # TODO: channel centralization
+        # channel centralization
+        img = torch.sub(img, torch.mean(img, (1, 2)).view(3, 1, 1))
 
         return img_path, img
 
@@ -88,7 +88,8 @@ class ListDataset(Dataset):
             img = img.unsqueeze(0)
             img = img.expand((3, img.shape[1:]))
 
-        # TODO: channel centralization
+        # channel centralization
+        img = torch.sub(img, torch.mean(img, (1, 2)).view(3, 1, 1))
 
         _, h, w = img.shape
         h_factor, w_factor = (h, w) if self.normalized_labels else (1, 1)
@@ -129,7 +130,13 @@ class ListDataset(Dataset):
             if np.random.random() < 0.5:
                 img, targets = horizontal_flip(img, targets)
 
-            # TODO: Add more augmentations
+            if np.random.random() < 0.8:
+                img = transforms.ColorJitter(
+                    brightness=(0.3, 1.5),
+                    contrast=(0.7, 1.3),
+                    saturation=(0.7, 1.3),
+                    hue=(-0.1, 0.1)
+                )(img)
 
         return img_path, img, targets
 

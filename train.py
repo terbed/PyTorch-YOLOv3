@@ -1,5 +1,6 @@
 from __future__ import division
 
+from comet_ml import Experiment
 from models import *
 from utils.logger import *
 from utils.utils import *
@@ -41,6 +42,7 @@ if __name__ == "__main__":
     print(opt)
 
     logger = Logger("logs")
+    experiment = Experiment(api_key="hs2nruoKow2CnUKisoeHccvh7", project_name="yolo", workspace="terbed")
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -140,6 +142,8 @@ if __name__ == "__main__":
                             tensorboard_log += [(f"{name}_{j+1}", metric)]
                 tensorboard_log += [("loss", loss.item())]
                 logger.list_of_scalars_summary(tensorboard_log, batches_done)
+                with experiment.train():
+                    experiment.log_metric("loss", loss.item())
 
             log_str += AsciiTable(metric_table).table
             log_str += f"\nTotal loss {loss.item()}"
@@ -173,6 +177,8 @@ if __name__ == "__main__":
                 ("val_f1", f1.mean()),
             ]
             logger.list_of_scalars_summary(evaluation_metrics, epoch)
+            with experiment.test():
+                experiment.log_metric("precision", precision.mean())
 
             # Print class APs and mAP
             ap_table = [["Index", "Class name", "AP"]]
