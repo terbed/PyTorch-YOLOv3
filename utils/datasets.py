@@ -110,7 +110,7 @@ class ListDataset(Dataset):
             img = img.expand((3, img.shape[1:]))
 
         _, h, w = img.shape
-        h_factor, w_factor = (h, w) if self.normalized_labels else (1, 1)
+        h_factor, w_factor = (h, w) if not self.normalized_labels else (1, 1)
         # Pad to square resolution
         img, pad = pad_to_square(img, 0)
         _, padded_h, padded_w = img.shape
@@ -153,7 +153,7 @@ class ListDataset(Dataset):
     def collate_fn(self, batch):
         paths, imgs, targets = list(zip(*batch))
         # Remove empty placeholder targets
-        targets = [rescale_labels(boxes, 500, [self.img_files, self.img_size]) for boxes in targets if boxes is not None]
+        targets = [boxes for boxes in targets if boxes is not None]
         # Add sample index to targets
         for i, boxes in enumerate(targets):
             boxes[:, 0] = i
