@@ -30,6 +30,16 @@ def resize(image, size, mode='nearest'):
     return image
 
 
+def file_is_empty(filename):
+    with open(filename) as fin:
+        for line in fin:
+            line = line[:line.find('#')]  # remove '#' comments
+            line = line.strip()  # rmv leading/trailing white space
+            if len(line) != 0:
+                return False
+    return True
+
+
 class ImageFolder(Dataset):
     def __init__(self, folder_path, img_size=416, resize_mode='nearest'):
         self.files = sorted(glob.glob("%s/*.*" % folder_path))
@@ -111,7 +121,7 @@ class ListDataset(Dataset):
         label_path = self.label_files[index % len(self.img_files)].rstrip()
 
         targets = None
-        if os.path.exists(label_path):
+        if not file_is_empty(label_path):
             boxes = torch.from_numpy(np.loadtxt(label_path).reshape(-1, 5))
             # Extract coordinates for unpadded + unscaled image
             x1 = w_factor * (boxes[:, 1] - boxes[:, 3] / 2)
