@@ -81,7 +81,6 @@ class ListDataset(Dataset):
         img_path = self.img_files[index % len(self.img_files)].rstrip()
         # Open image
         img = Image.open(img_path).convert('RGB')
-        resize(img, self.img_size, self.resize_mode)
         # Apply PIL augmentations
         if self.augment:
             if np.random.random() < 0.8:
@@ -93,6 +92,8 @@ class ListDataset(Dataset):
                 )(img)
         # Extract image as PyTorch tensor
         img = transforms.ToTensor()(img)
+        # Resize image
+        resize(img, self.img_size, self.resize_mode)
 
         # Handle images with less than three channels
         if len(img.shape) != 3:
