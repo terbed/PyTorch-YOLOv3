@@ -160,7 +160,7 @@ if __name__ == "__main__":
 
             model.seen += imgs.size(0)
 
-        if epoch % opt.evaluation_interval == 0 and epoch > 0:
+        if epoch % opt.evaluation_interval == 0 and epoch > 3:
             print("\n---- Evaluating Model ----")
             # Evaluate the model on the validation set
             precision, recall, AP, f1, ap_class = evaluate(
@@ -171,7 +171,7 @@ if __name__ == "__main__":
                 nms_thres=0.5,
                 img_size=opt.img_size,
                 resize_mode=opt.interp_mode,
-                batch_size=8,
+                batch_size=opt.batch_size,
             )
             evaluation_metrics = [
                 ("val_precision", precision.mean()),
