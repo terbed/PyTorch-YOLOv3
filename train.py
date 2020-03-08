@@ -45,7 +45,7 @@ if __name__ == "__main__":
     experiment = Experiment(api_key="hs2nruoKow2CnUKisoeHccvh7", project_name="yolo", workspace="terbed")
     experiment.disable_mp()
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
 
     os.makedirs("output", exist_ok=True)
     os.makedirs("checkpoints", exist_ok=True)
@@ -103,6 +103,8 @@ if __name__ == "__main__":
     ]
 
     for epoch in range(opt.epochs):
+        experiment.set_epoch(epoch)
+
         model.train()
         start_time = time.time()
         for batch_i, (_, imgs, targets) in enumerate(dataloader):
@@ -188,9 +190,11 @@ if __name__ == "__main__":
             print(AsciiTable(ap_table).table)
             print(f"---- mAP {AP.mean()}")
             with experiment.test():
-                experiment.log_metric("AP", AP.mean(), epoch=epoch)
+                experiment.log_metric("AP_baby", AP[0], epoch=epoch)
 
         if epoch % opt.checkpoint_interval == 0:
             torch.save(model.state_dict(), f"checkpoints/yolov3_ckpt_%d.pth" % epoch)
+
+        experiment.log_epoch_end(epoch)
 
     experiment.end()
