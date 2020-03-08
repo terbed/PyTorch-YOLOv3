@@ -153,7 +153,7 @@ class ListDataset(Dataset):
     def collate_fn(self, batch):
         paths, imgs, targets = list(zip(*batch))
         # Remove empty placeholder targets
-        targets = [rescale_boxes(boxes, 500, (self.img_files, self.img_size)) for boxes in targets if boxes is not None]
+        targets = [rescale_boxes(boxes, 500, [self.img_files, self.img_size]) for boxes in targets if boxes is not None]
         # Add sample index to targets
         for i, boxes in enumerate(targets):
             boxes[:, 0] = i
