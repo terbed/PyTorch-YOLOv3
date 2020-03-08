@@ -143,11 +143,11 @@ if __name__ == "__main__":
                             tensorboard_log += [(f"{name}_{j+1}", metric)]
                 tensorboard_log += [("loss", loss.item())]
                 logger.list_of_scalars_summary(tensorboard_log, batches_done)
-                with experiment.train():
-                    experiment.log_metric("loss", loss.item())
 
             log_str += AsciiTable(metric_table).table
             log_str += f"\nTotal loss {loss.item()}"
+            with experiment.train():
+                experiment.log_metric("total_loss", loss.item())
 
             # Determine approximate time left for epoch
             epoch_batches_left = len(dataloader) - (batch_i + 1)
