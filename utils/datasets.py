@@ -88,7 +88,7 @@ class ListDataset(Dataset):
                     brightness=(0.3, 1.5),
                     contrast=(0.7, 1.3),
                     saturation=(0.7, 1.3),
-                    hue=0
+                    hue=(-0.1, 0.1)
                 )(img)
         # Extract image as PyTorch tensor
         img = transforms.ToTensor()(img)
