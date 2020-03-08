@@ -20,11 +20,11 @@ from torch.autograd import Variable
 import torch.optim as optim
 
 
-def evaluate(model, path, iou_thres, conf_thres, nms_thres, img_size, batch_size):
+def evaluate(model, path, iou_thres, conf_thres, nms_thres, img_size, resize_mode, batch_size):
     model.eval()
 
     # Get dataloader
-    dataset = ListDataset(path, img_size=img_size, augment=False, multiscale=False)
+    dataset = ListDataset(path, img_size=img_size, resize_mode=resize_mode, augment=False, multiscale=False)
     dataloader = torch.utils.data.DataLoader(
         dataset, batch_size=batch_size, shuffle=False, num_workers=1, collate_fn=dataset.collate_fn
     )
@@ -68,6 +68,7 @@ if __name__ == "__main__":
     parser.add_argument("--nms_thres", type=float, default=0.5, help="iou thresshold for non-maximum suppression")
     parser.add_argument("--n_cpu", type=int, default=8, help="number of cpu threads to use during batch generation")
     parser.add_argument("--img_size", type=int, default=416, help="size of each image dimension")
+    parser.add_argument("--interp_mode", type=str, default="nearest", help="area, bicubic, nearest")
     opt = parser.parse_args()
     print(opt)
 
@@ -95,6 +96,7 @@ if __name__ == "__main__":
         conf_thres=opt.conf_thres,
         nms_thres=opt.nms_thres,
         img_size=opt.img_size,
+        interp_mode=opt.resize_mode,
         batch_size=8,
     )
 
