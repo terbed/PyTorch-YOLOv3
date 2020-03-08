@@ -8,7 +8,6 @@ import torch
 import torch.nn.functional as F
 
 from utils.augmentations import horizontal_flip
-from utils.utils import rescale_labels
 from torch.utils.data import Dataset
 import torchvision.transforms as transforms
 
