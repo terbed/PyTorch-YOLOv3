@@ -54,7 +54,7 @@ def evaluate(model, path, iou_thres, conf_thres, nms_thres, img_size, resize_mod
         true_positives, pred_scores, pred_labels = [np.concatenate(x, 0) for x in list(zip(*sample_metrics))]
     except ValueError:
         print("OOPS!!!! ValueError, but nur keine Panik! It is handled!")
-        return np.array(-1), np.array(-1), np.array(-1), np.array(-1), np.array(-1)
+        return None, None, None, None, None
 
     precision, recall, AP, f1, ap_class = ap_per_class(true_positives, pred_scores, pred_labels, labels)
 
