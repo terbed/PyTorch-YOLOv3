@@ -163,7 +163,6 @@ class ListDataset(Dataset):
 
         # Resize images
         imgs = torch.stack([resize(img, self.img_size, self.resize_mode) for img in imgs])
-        targets
 
         self.batch_count += 1
 
