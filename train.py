@@ -104,7 +104,6 @@ if __name__ == "__main__":
 
     for epoch in range(opt.epochs):
         experiment.set_epoch(epoch)
-
         model.train()
         start_time = time.time()
         for batch_i, (_, imgs, targets) in enumerate(dataloader):
@@ -149,7 +148,7 @@ if __name__ == "__main__":
             log_str += AsciiTable(metric_table).table
             log_str += f"\nTotal loss {loss.item()}"
             with experiment.train():
-                experiment.log_metric("total_loss", loss.item(), epoch=epoch)
+                experiment.log_metric("total_loss", loss.item(), step=epoch)
 
             # Determine approximate time left for epoch
             epoch_batches_left = len(dataloader) - (batch_i + 1)
@@ -160,7 +159,7 @@ if __name__ == "__main__":
 
             model.seen += imgs.size(0)
 
-        if epoch % opt.evaluation_interval == 0 and epoch > 3:
+        if epoch % opt.evaluation_interval == 0:
             print("\n---- Evaluating Model ----")
             # Evaluate the model on the validation set
             precision, recall, AP, f1, ap_class = evaluate(
@@ -183,7 +182,7 @@ if __name__ == "__main__":
                 ]
                 logger.list_of_scalars_summary(evaluation_metrics, epoch)
                 with experiment.test():
-                    experiment.log_metric("precision", precision.mean(), epoch=epoch)
+                    experiment.log_metric("precision", precision.mean(), step=epoch)
 
                 # Print class APs and mAP
                 ap_table = [["Index", "Class name", "AP"]]
@@ -192,7 +191,7 @@ if __name__ == "__main__":
                 print(AsciiTable(ap_table).table)
                 print(f"---- mAP {AP.mean()}")
                 with experiment.test():
-                    experiment.log_metric("AP_baby", AP[0], epoch=epoch)
+                    experiment.log_metric("AP_baby", AP[0], step=epoch)
             else:
                 print('CANNOT EVALUATE!!! ----------------------------')
 
