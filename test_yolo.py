@@ -49,8 +49,12 @@ device = tr.device('cuda') if tr.cuda.is_available() else tr.device('cpu')
 model_def = 'config/yolov3-custom.cfg'
 class_path = 'data/custom/classes.names'
 weight_path = 'weights/yolov3_ckpt_42.pth'
-img_path = '/media/terbe/sztaki/DATA/BabyCropper/data/test_baby/'
-img_name = '000028.png'
+#img_path = '/media/terbe/sztaki/DATA/BabyCropper/data/test_baby/'
+#img_name = '000028.png'
+
+img_path = '/media/terbe/sztaki/DATA/BabyCropper/data/images128/'
+img_name = '2020y2m16d_9h32m_001347.png'
+
 
 # parameters
 conf_thres = 0.8
@@ -65,9 +69,9 @@ model.eval()
 classes = load_classes(class_path)  # Extracts class labels from file
 
 # Load image
-# inp = load_input(img_path+img_name, device)
-# img = cv2.imread(img_path+img_name)
-img, inp = load_input_hdf5('/media/nas/PUBLIC/benchmark_set/breathandpulsebenchmark_128x128_8UC3_minden.hdf5', 0, device)
+inp = load_input(img_path+img_name, device)
+img = cv2.imread(img_path+img_name)
+#img, inp = load_input_hdf5('/media/nas/PUBLIC/benchmark_set/breathandpulsebenchmark_128x128_8UC3_minden.hdf5', 0, device)
 
 with tr.set_grad_enabled(False):
     outputs = model(inp)
@@ -89,7 +93,7 @@ for x1, y1, x2, y2, conf, cls_conf, cls_pred in detections:
 
     print(x1, y1, x2, y2)
 
-    img = cv2.rectangle(img, (x1, y1), (x2, y2), (0, 0, 55), 2)
+    img = cv2.rectangle(img, (x1, y1), (x2, y2), (0, 0, 0), 1)
     cv2.imshow('frame', img)
     while cv2.waitKey(1) != 13:
         pass
