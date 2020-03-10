@@ -71,7 +71,7 @@ if __name__ == "__main__":
     prev_time = time.time()
     for batch_i, (img_paths, input_imgs) in enumerate(dataloader):
         # Configure input
-        input_imgs = Variable(input_imgs.type(Tensor))
+        input_imgs = input_imgs.type(Tensor)
 
         # Get detections
         with torch.no_grad():
