@@ -21,21 +21,15 @@ def load_input(img_path, device):
 
 
 def load_input_hdf5(path, idx, device):
-    cv2.namedWindow('input', cv2.WINDOW_NORMAL)
-    cv2.resizeWindow('input', 500, 500)
     with h5py.File(path, 'r') as db:
         frames = db['frames']
         print(f'Video shape: {frames.shape}')
         img = frames[idx, :, :, :]
         print(f'image shape: {img.shape}')
+        inp = transforms.ToTensor()(img)
 
         img = cv2.cvtColor(frames[idx, :, :, :].squeeze(), cv2.COLOR_RGB2BGR)
-        cv2.imshow('input', img)
-        while cv2.waitKey(1) != 13:
-            pass
 
-
-        inp = transforms.ToTensor()(img)
         inp = F.interpolate(inp.unsqueeze(0), size=416, mode="nearest")
         inp = inp.type(tr.FloatTensor)
         inp = inp.to(device)
@@ -55,12 +49,15 @@ weight_path = 'weights/yolov3_ckpt_42.pth'
 img_path = '/media/terbe/sztaki/DATA/BabyCropper/data/images128/'
 img_name = '2020y2m16d_9h32m_001347.png'
 
-
+# -----------------
 # parameters
+# -----------------
 conf_thres = 0.8
 nms_thres = 0.4
 
+# --------------------
 # Load model
+# -------------------
 model = Darknet(model_def).to(device)
 model.load_state_dict(torch.load(weight_path))
 model.eval()
@@ -69,36 +66,50 @@ model.eval()
 classes = load_classes(class_path)  # Extracts class labels from file
 
 # Load image
-inp = load_input(img_path+img_name, device)
-img = cv2.imread(img_path+img_name)
-#img, inp = load_input_hdf5('/media/nas/PUBLIC/benchmark_set/breathandpulsebenchmark_128x128_8UC3_minden.hdf5', 0, device)
+# inp = load_input(img_path+img_name, device)
+# img = cv2.imread(img_path+img_name)
 
-with tr.set_grad_enabled(False):
-    outputs = model(inp)
-    outputs = non_max_suppression(outputs, conf_thres, nms_thres)[0]
-print(f'Output calculated! {outputs} ')
+root_hdf5 ='/media/nas/PUBLIC/benchmark_set/'
+hdf5_path = "test_series_9_febr25.hdf5"
+#hdf5_path = 'breathandpulsebenchmark_128x128_8UC3_minden.hdf5'
 
-print(img.shape[:2])
-detections = rescale_boxes(outputs, 416, img.shape[:2])
-unique_labels = detections[:, -1].cpu().unique()
-n_cls_preds = len(unique_labels)
+for i in range(1, 128):
+    img, inp = load_input_hdf5(root_hdf5+hdf5_path, i, device)
 
-cv2.namedWindow('frame', cv2.WINDOW_NORMAL)
-cv2.resizeWindow('frame', 500, 500)
-for x1, y1, x2, y2, conf, cls_conf, cls_pred in detections:
-    print("\t+ Label: %s, Conf: %.5f" % (classes[int(cls_pred)], cls_conf.item()))
+    with tr.set_grad_enabled(False):
+        outputs = model(inp)
+        outputs = non_max_suppression(outputs, conf_thres, nms_thres)[0]
+    print(f'Output calculated! {outputs} ')
 
-    box_w = x2 - x1
-    box_h = y2 - y1
+    print(img.shape[:2])
+    detections = rescale_boxes(outputs, 416, img.shape[:2])
+    unique_labels = detections[:, -1].cpu().unique()
+    n_cls_preds = len(unique_labels)
 
-    print(x1, y1, x2, y2)
+    cv2.namedWindow('frame', cv2.WINDOW_NORMAL)
+    cv2.resizeWindow('frame', 500, 500)
 
-    img = cv2.rectangle(img, (x1, y1), (x2, y2), (0, 0, 0), 1)
-    cv2.imshow('frame', img)
-    while cv2.waitKey(1) != 13:
-        pass
+    if detections is not None:
+        x_1 = y_1 = x_2 = y_2 = 0
+        prev_conf = 0
+        for x1, y1, x2, y2, conf, cls_conf, cls_pred in detections:
+            print("\t+ Label: %s, Conf: %.5f" % (classes[int(cls_pred)], cls_conf.item()))
 
+            box_w = x2 - x1
+            box_h = y2 - y1
 
-cv2.imshow('frame', img)
+            # Crop baby
+            if classes[int(cls_pred)] == 'baby':
+                if prev_conf < cls_conf:
+                    prev_conf = cls_conf
+                    x_1, y_1, x_2, y_2 = x1, y1, x2, y2
+
+        img = cv2.rectangle(img, (x_1, y_1), (x_2, y_2), (0, 0, 0), 1)
+        cv2.imshow('frame', img)
+        cv2.waitKey(1)
+    else:
+        print('NO OBJECT WAS FOUND!!!')
+
 while cv2.waitKey(1) != 13:
     pass
+cv2.destroyAllWindows()
