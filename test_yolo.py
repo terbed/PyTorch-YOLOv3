@@ -6,6 +6,7 @@ import cv2
 import torchvision.transforms as transforms
 from PIL import Image
 import torch.nn.functional as F
+import h5py
 tr = torch
 
 
@@ -17,6 +18,30 @@ def load_input(img_path, device):
     img = img.to(device)
 
     return img
+
+
+def load_input_hdf5(path, idx, device):
+    cv2.namedWindow('input', cv2.WINDOW_NORMAL)
+    cv2.resizeWindow('input', 500, 500)
+    with h5py.File(path, 'r') as db:
+        frames = db['frames']
+        print(f'Video shape: {frames.shape}')
+        img = frames[idx, :, :, :]
+        print(f'image shape: {img.shape}')
+
+        img = cv2.cvtColor(frames[idx, :, :, :].squeeze(), cv2.COLOR_RGB2BGR)
+        cv2.imshow('input', img)
+        while cv2.waitKey(1) != 13:
+            pass
+
+
+        inp = transforms.ToTensor()(img)
+        inp = F.interpolate(inp.unsqueeze(0), size=416, mode="nearest")
+        inp = inp.type(tr.FloatTensor)
+        inp = inp.to(device)
+        print(f'Network input: {inp.shape}')
+
+        return img, inp
 
 
 device = tr.device('cuda') if tr.cuda.is_available() else tr.device('cpu')
@@ -40,13 +65,14 @@ model.eval()
 classes = load_classes(class_path)  # Extracts class labels from file
 
 # Load image
-inp = load_input(img_path+img_name, device)
-img = cv2.imread(img_path+img_name)
+# inp = load_input(img_path+img_name, device)
+# img = cv2.imread(img_path+img_name)
+img, inp = load_input_hdf5('/media/nas/PUBLIC/benchmark_set/breathandpulsebenchmark_128x128_8UC3_minden.hdf5', 0, device)
 
 with tr.set_grad_enabled(False):
     outputs = model(inp)
     outputs = non_max_suppression(outputs, conf_thres, nms_thres)[0]
-print('Output calculated! ')
+print(f'Output calculated! {outputs} ')
 
 print(img.shape[:2])
 detections = rescale_boxes(outputs, 416, img.shape[:2])

@@ -103,6 +103,9 @@ class ListDataset(Dataset):
         # Extract image as PyTorch tensor
         img = transforms.ToTensor()(img)
 
+        # Downsample !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Remove if training on original size !!!!!!!!!!!!!!!!!!!!!!
+        img = resize(img, 128, 'area')
+
         # Handle images with less than three channels
         if len(img.shape) != 3:
             img = img.unsqueeze(0)
