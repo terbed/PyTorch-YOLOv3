@@ -11,11 +11,11 @@ from torch.utils.data import DataLoader
 tr = torch
 
 
-def get_baby_box(detection):
-    if detection is not None:
+def get_baby_box(det):
+    if det is not None:
         x_1 = y_1 = x_2 = y_2 = 0
         prev_conf = 0
-        for x1, y1, x2, y2, conf, cls_conf, cls_pred in detections:
+        for x1, y1, x2, y2, conf, cls_conf, cls_pred in det:
             # print("\t+ Label: %s, Conf: %.5f" % (classes[int(cls_pred)], cls_conf.item()))
 
             box_w = x2 - x1
@@ -70,6 +70,7 @@ if __name__ == '__main__':
             outputs = non_max_suppression(outputs, args.conf_thres, args.nms_thres)
 
         detections = [rescale_boxes(output, 416, (128, 128)) for output in outputs]
+        # detections = rescale_boxes(outputs, 416, (128, 128),)
 
         for count, detection in enumerate(detections):
             x1, y1, x2, y2 = get_baby_box(detection)
