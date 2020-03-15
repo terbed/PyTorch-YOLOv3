@@ -219,7 +219,7 @@ class ListDatasetHDF5(Dataset):
             img = frames[index*self.D, :, :, :]
 
         img = transforms.ToTensor()(img)
-        img = F.interpolate(img.unsqueeze(0), size=416, mode="nearest")
+        img = F.interpolate(img.unsqueeze(0), size=416, mode="nearest").squeeze()
         img = img.type(tr.FloatTensor)
 
         return img
