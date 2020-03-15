@@ -54,7 +54,7 @@ if __name__ == '__main__':
     # Load model
     # -------------------
     model = Darknet(args.model_def).to(device)
-    model.load_state_dict(torch.load(args.weight_path))
+    model.load_state_dict(torch.load(args.weights_path))
     model.eval()
 
     # Load classes
