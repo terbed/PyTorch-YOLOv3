@@ -185,11 +185,18 @@ class ListDatasetHDF5(Dataset):
         if add_bboxes:
             # Create dataset for bounding boxes
             with h5py.File(path, 'a') as db:
-                frames = db['frames']
-                self.N = frames.shape[0]
 
-                db.create_dataset('bbox', shape=(self.N, 4), maxshape=(None, 4), dtype=np.int, chunks=True)
-                print('\nAdded empty bounding box dataset to hdf5!')
+                keys = db.keys()
+                print(keys)
+                is_there = 'bbox' in keys
+                if is_there:
+                    print('Dataset already created...')
+                else:
+                    frames = db['frames']
+                    self.N = frames.shape[0]
+
+                    db.create_dataset('bbox', shape=(self.N, 4), maxshape=(None, 4), dtype=np.int, chunks=True)
+                    print('\nAdded empty bounding box dataset to hdf5!')
 
         self.img_size = img_size
         self.resize_mode = resize_mode
