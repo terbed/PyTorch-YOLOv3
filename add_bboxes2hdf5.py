@@ -66,7 +66,7 @@ if __name__ == '__main__':
     for batch_i, x in enumerate(tqdm.tqdm(dataloader, 'Detecting baby')):
         with tr.no_grad():
             x = x.to(device)
-            outputs = model(x)
+            outputs = model(x.squeeze())
             outputs = non_max_suppression(outputs, args.conf_thres, args.nms_thres)
 
         detections = [rescale_boxes(output, 416, (128, 128)) for output in outputs]
