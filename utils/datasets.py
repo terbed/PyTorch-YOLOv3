@@ -6,10 +6,12 @@ import numpy as np
 from PIL import Image
 import torch
 import torch.nn.functional as F
+import h5py
 
 from utils.augmentations import horizontal_flip
 from torch.utils.data import Dataset
 import torchvision.transforms as transforms
+tr = torch
 
 
 def pad_to_square(img, pad_value):
@@ -165,11 +167,55 @@ class ListDataset(Dataset):
         imgs = torch.stack([resize(img, self.img_size, self.resize_mode) for img in imgs])
 
         # Resize labels
-
-
         self.batch_count += 1
 
         return paths, imgs, targets
 
     def __len__(self):
         return len(self.img_files)
+
+
+class ListDatasetHDF5(Dataset):
+    def __init__(self, path, img_size=416, resize_mode='nearest', normalized_labels=True, add_bboxes=True):
+        self.add_bbox = add_bboxes
+        self.path = path
+        self.D = 128
+
+        self.N = None
+        if add_bboxes:
+            # Create dataset for bounding boxes
+            with h5py.File(path, 'a') as db:
+                frames = db['frames']
+                self.N = frames.shape[0]
+
+                db.create_dataset('bbox', shape=(self.N, 4), maxshape=(None, 4), dtype=np.int, chunks=True)
+                print('\nAdded empty bounding box dataset to hdf5!')
+
+        self.img_size = img_size
+        self.resize_mode = resize_mode
+        self.max_objects = 100
+        self.normalized_labels = normalized_labels
+        self.min_size = self.img_size - 3 * 32
+        self.max_size = self.img_size + 3 * 32
+        self.batch_count = 0
+
+        self.num_samples = ((self.N - 64) // self.D) - 1
+
+    def __len__(self):
+        return self.num_samples
+
+    def __getitem__(self, index):
+        # ---------
+        #  Image
+        # ---------
+        img = None
+        with h5py.File(self.path, 'r') as db:
+            frames = db['frames']
+            img = frames[index*self.D, :, :, :]
+
+        img = transforms.ToTensor()(img)
+        img = F.interpolate(img.unsqueeze(0), size=416, mode="nearest")
+        img = img.type(tr.FloatTensor)
+
+        return img
+
