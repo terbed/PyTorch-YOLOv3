@@ -29,7 +29,7 @@ def get_baby_box(det):
         return x_1, y_1, x_2, y_2
     else:
         print('NO OBJECT WAS FOUND!!!')
-        return None
+        return 0, 0, 128, 128   # return the full size
 
 
 if __name__ == '__main__':
@@ -69,7 +69,7 @@ if __name__ == '__main__':
             outputs = model(x)
             outputs = non_max_suppression(outputs, args.conf_thres, args.nms_thres)
 
-        detections = [rescale_boxes(output, 416, (128, 128)) for output in outputs]
+        detections = [rescale_boxes(output, 416, (128, 128)) if output is not None else None for output in outputs]
         # detections = rescale_boxes(outputs, 416, (128, 128),)
 
         for count, detection in enumerate(detections):
