@@ -11,21 +11,31 @@ from torch.utils.data import DataLoader
 tr = torch
 
 
-def get_baby_box(det):
+def get_baby_box(det, img_size):
     if det is not None:
         x_1 = y_1 = x_2 = y_2 = 0
         prev_conf = 0
         for x1, y1, x2, y2, conf, cls_conf, cls_pred in det:
-            # print("\t+ Label: %s, Conf: %.5f" % (classes[int(cls_pred)], cls_conf.item()))
-
-            box_w = x2 - x1
-            box_h = y2 - y1
-
             # Crop baby
             if classes[int(cls_pred)] == 'baby':
                 if prev_conf < cls_conf:
                     prev_conf = cls_conf
                     x_1, y_1, x_2, y_2 = round(x1.item()), round(y1.item()), round(x2.item()), round(y2.item())
+
+        # check to be inside image size boundaries
+        if y_2 > img_size:
+            y_2 = img_size
+        if x_2 > img_size:
+            x_2 = img_size
+        if y_1 < 0:
+            y_1 = 0
+        if x_1 < 0:
+            x_1 = 0
+        # check validity
+        if y_2 - y_1 < 1 or x_2 - x_1 < 1:
+            y_1 = x_1 = 0
+            y_2, x_2 = img_size
+
         return x_1, y_1, x_2, y_2
     else:
         print('NO OBJECT WAS FOUND!!!')
@@ -43,7 +53,7 @@ if __name__ == '__main__':
     parser.add_argument("--conf_thres", type=float, default=0.8, help="object confidence threshold")
     parser.add_argument("--nms_thres", type=float, default=0.4, help="iou thresshold for non-maximum suppression")
     parser.add_argument("--n_cpu", type=int, default=8, help="number of cpu threads to use during batch generation")
-    parser.add_argument("--img_size", type=int, default=416, help="size of each image dimension")
+    parser.add_argument("--img_size", type=int, default=128, help="size of image in hdf5")
     parser.add_argument("--interp_mode", type=str, default="nearest", help="area, bicubic, nearest")
     args = parser.parse_args()
     print(args)
@@ -69,11 +79,11 @@ if __name__ == '__main__':
             outputs = model(x)
             outputs = non_max_suppression(outputs, args.conf_thres, args.nms_thres)
 
-        detections = [rescale_boxes(output, 416, (128, 128)) if output is not None else None for output in outputs]
+        detections = [rescale_boxes(output, 416, (args.img_size, args.img_size)) if output is not None else None for output in outputs]
         # detections = rescale_boxes(outputs, 416, (128, 128),)
 
         for count, detection in enumerate(detections):
-            x1, y1, x2, y2 = get_baby_box(detection)
+            x1, y1, x2, y2 = get_baby_box(detection, args.img_size)
 
             with h5py.File(args.hdf5_path, 'a') as db:
                 bboxes = db['bbox']
