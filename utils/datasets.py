@@ -7,6 +7,7 @@ from PIL import Image
 import torch
 import torch.nn.functional as F
 import h5py
+import cv2
 
 from utils.augmentations import horizontal_flip
 from torch.utils.data import Dataset
@@ -198,7 +199,7 @@ class ListDatasetHDF5(Dataset):
 
         self.img_size = img_size
         self.resize_mode = resize_mode
-        self.max_objects = 100
+        self.max_objects = 5
         self.normalized_labels = normalized_labels
         self.min_size = self.img_size - 3 * 32
         self.max_size = self.img_size + 3 * 32
@@ -217,6 +218,14 @@ class ListDatasetHDF5(Dataset):
         with h5py.File(self.path, 'r') as db:
             frames = db['frames']
             img = frames[index*self.D, :, :, :]
+
+        # convert to 8 bit if needed
+        if img.dtype is np.dtype(np.uint16):
+            if np.max(img[:]) < 4096:
+                scale = 4095.  # 12 bit
+            else:
+                scale = 65535.  # 16 bit
+            img = cv2.convertScaleAbs(img, alpha=(225. / scale))
 
         img = transforms.ToTensor()(img)
         img = F.interpolate(img.unsqueeze(0), size=416, mode="nearest").squeeze()
