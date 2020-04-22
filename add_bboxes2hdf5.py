@@ -34,7 +34,7 @@ def get_baby_box(det, img_size):
         # check validity
         if y_2 - y_1 < 1 or x_2 - x_1 < 1:
             y_1 = x_1 = 0
-            y_2, x_2 = img_size
+            y_2 = x_2 = img_size
 
         return x_1, y_1, x_2, y_2
     else:
